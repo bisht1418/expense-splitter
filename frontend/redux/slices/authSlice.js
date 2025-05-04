@@ -1,11 +1,14 @@
+"use client"
+
 import { createSlice } from "@reduxjs/toolkit"
 
+// Sample user data
 const initialState = {
   isAuthenticated: false,
   user: null,
 }
 
-export const authSlice = createSlice({
+const authSlice = createSlice({
   name: "auth",
   initialState,
   reducers: {
@@ -13,16 +16,16 @@ export const authSlice = createSlice({
       state.isAuthenticated = true
       state.user = action.payload
     },
+    register: (state, action) => {
+      state.isAuthenticated = true
+      state.user = action.payload
+    },
     logout: (state) => {
       state.isAuthenticated = false
       state.user = null
     },
-    updateUser: (state, action) => {
-      state.user = { ...state.user, ...action.payload }
-    },
   },
 })
 
-export const { login, logout, updateUser } = authSlice.actions
-
+export const { login, register, logout } = authSlice.actions
 export default authSlice.reducer

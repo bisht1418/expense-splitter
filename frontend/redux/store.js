@@ -1,50 +1,57 @@
-import { configureStore } from "@reduxjs/toolkit"
-import authReducer from "./features/authSlice"
-import expensesReducer from "./features/expensesSlice"
-import roommatesReducer from "./features/roommatesSlice"
+"use client"
 
-// Create the store
-export const store = configureStore({
-  reducer: {
-    auth: authReducer,
-    expenses: expensesReducer,
-    roommates: roommatesReducer,
-  },
+import { configureStore } from "@reduxjs/toolkit"
+import { combineReducers } from "redux"
+import authReducer from "./slices/authSlice"
+import expensesReducer from "./slices/expensesSlice"
+import friendsReducer from "./slices/friendsSlice"
+import settlementsReducer from "./slices/settlementsSlice"
+
+// Load state from localStorage
+const loadState = () => {
+  if (typeof window === "undefined") {
+    return undefined
+  }
+  try {
+    const serializedState = localStorage.getItem("expenseSplitterState")
+    if (serializedState === null) {
+      return undefined
+    }
+    return JSON.parse(serializedState)
+  } catch (err) {
+    console.error("Error loading state from localStorage:", err)
+    return undefined
+  }
+}
+
+// Save state to localStorage
+const saveState = (state) => {
+  if (typeof window === "undefined") {
+    return
+  }
+  try {
+    const serializedState = JSON.stringify(state)
+    localStorage.setItem("expenseSplitterState", serializedState)
+  } catch (err) {
+    console.error("Error saving state to localStorage:", err)
+  }
+}
+
+// Combine reducers
+const rootReducer = combineReducers({
+  auth: authReducer,
+  expenses: expensesReducer,
+  friends: friendsReducer,
+  settlements: settlementsReducer,
 })
 
-// Add a custom persistence mechanism
-if (typeof window !== "undefined") {
-  // Load state from localStorage on initialization
-  try {
-    const persistedState = localStorage.getItem("roomSplitState")
-    if (persistedState) {
-      const state = JSON.parse(persistedState)
-      // Dispatch actions to set the state
-      if (state.auth && state.auth.isAuthenticated) {
-        store.dispatch({ type: "auth/login", payload: state.auth.user })
-      }
-      if (state.expenses && state.expenses.expenses) {
-        state.expenses.expenses.forEach((expense) => {
-          store.dispatch({ type: "expenses/addExpense", payload: expense })
-        })
-      }
-      if (state.roommates && state.roommates.roommates) {
-        state.roommates.roommates.forEach((roommate) => {
-          store.dispatch({ type: "roommates/addRoommate", payload: roommate })
-        })
-      }
-    }
-  } catch (e) {
-    console.error("Error loading persisted state:", e)
-  }
+// Create store
+export const store = configureStore({
+  reducer: rootReducer,
+  preloadedState: loadState(),
+})
 
-  // Subscribe to store changes to save to localStorage
-  store.subscribe(() => {
-    try {
-      const state = store.getState()
-      localStorage.setItem("roomSplitState", JSON.stringify(state))
-    } catch (e) {
-      console.error("Error saving state to localStorage:", e)
-    }
-  })
-}
+// Subscribe to store changes and save to localStorage
+store.subscribe(() => {
+  saveState(store.getState())
+})
