@@ -89,7 +89,7 @@ npm start
 
 ## 🌐 Live Demo
 
-> _Add link to your deployed project here ( Vercel,)_
+> _https://expense-splitter-two.vercel.app/_
 
 ---
 
